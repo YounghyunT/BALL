@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ㅇ의 마법교실</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="stage" class="stage" aria-label="webcam magic classroom">
+        <video id="camera" class="camera" autoplay playsinline muted></video>
+        <canvas id="overlay" class="overlay"></canvas>
+        <canvas id="fxCanvas" class="fx-canvas"></canvas>
+        <div id="hintToast" class="hint-toast" aria-live="polite">
+          ✨ 엄지와 검지를 잡아서 에너지를 폭발시키세요! 🪄
+        </div>
+
+        <div id="orb" class="orb" aria-hidden="true">
+          <span class="aura aura-one"></span>
+          <span class="aura aura-two"></span>
+          <span class="orb-core"></span>
+          <span class="orb-ring"></span>
+          <span class="charge-ring"></span>
+        </div>
+      </section>
+
+      <aside class="control-panel" aria-label="controls">
+        <div class="brand-block">
+          <p class="eyebrow">Magic Class</p>
+          <h1>ㅇ의 마법교실</h1>
+        </div>
+
+        <div class="status-card">
+          <span id="statusDot" class="status-dot"></span>
+          <p id="statusText">카메라를 시작할 준비가 됐어요.</p>
+        </div>
+
+        <div class="readout-grid">
+          <div>
+            <span>모드</span>
+            <strong id="modeLabel">대기</strong>
+          </div>
+          <div>
+            <span>제스처</span>
+            <strong id="gestureLabel">없음</strong>
+          </div>
+          <div>
+            <span>충전</span>
+            <strong id="chargeLabel">0%</strong>
+          </div>
+          <div>
+            <span>필터</span>
+            <strong id="faceLabel">대기</strong>
+          </div>
+        </div>
+
+        <button id="startButton" class="start-button" type="button">
+          <span>카메라 시작</span>
+        </button>
+      </aside>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
