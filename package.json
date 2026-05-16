@@ -1,0 +1,8 @@
+{
+  "name": "gesture-orbit-deploy",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix gesture-orbit install && npm --prefix gesture-orbit run build"
+  }
+}
