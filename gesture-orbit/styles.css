@@ -490,20 +490,21 @@ h1 {
   }
 
   .control-panel {
-    bottom: max(10px, env(safe-area-inset-bottom));
+    top: max(12px, env(safe-area-inset-top));
+    bottom: auto;
     align-items: center;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    gap: 10px;
-    width: min(420px, calc(100vw - 20px));
-    min-height: 64px;
-    max-height: 74px;
-    padding: 9px 10px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    width: min(430px, calc(100vw - 24px));
+    min-height: 72px;
+    max-height: none;
+    padding: 12px;
     background: rgba(12, 16, 24, 0.68);
   }
 
   .brand-block {
-    flex: 1 1 auto;
+    align-self: center;
     min-width: 0;
   }
 
@@ -513,7 +514,7 @@ h1 {
 
   h1 {
     overflow: hidden;
-    font-size: clamp(1rem, 4.2vw, 1.15rem);
+    font-size: clamp(1.05rem, 4.5vw, 1.22rem);
     line-height: 1.1;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -526,10 +527,9 @@ h1 {
   }
 
   .start-button {
-    flex: 0 0 auto;
-    min-height: 46px;
-    width: clamp(112px, 34vw, 136px);
-    padding: 0 12px;
+    min-height: 48px;
+    width: clamp(124px, 36vw, 148px);
+    padding: 0 14px;
     font-size: 0.95rem;
     white-space: nowrap;
   }
