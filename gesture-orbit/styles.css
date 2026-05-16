@@ -486,29 +486,51 @@ h1 {
 
   .app-shell {
     min-height: 100vh;
+    min-height: 100dvh;
   }
 
   .control-panel {
+    bottom: max(10px, env(safe-area-inset-bottom));
+    align-items: center;
     flex-wrap: nowrap;
-    gap: 8px;
-    max-height: 126px;
-    width: calc(100vw - 32px);
+    justify-content: space-between;
+    gap: 10px;
+    width: min(420px, calc(100vw - 20px));
+    min-height: 64px;
+    max-height: 74px;
+    padding: 9px 10px;
+    background: rgba(12, 16, 24, 0.68);
   }
 
   .brand-block {
-    flex: 0 0 132px;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
-  .status-card {
-    flex: 1 1 180px;
+  .eyebrow {
+    display: none;
   }
 
+  h1 {
+    overflow: hidden;
+    font-size: clamp(1rem, 4.2vw, 1.15rem);
+    line-height: 1.1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .status-card,
   .sound-panel,
   .readout-grid {
     display: none;
   }
 
   .start-button {
-    flex: 0 0 128px;
+    flex: 0 0 auto;
+    min-height: 46px;
+    width: clamp(112px, 34vw, 136px);
+    padding: 0 12px;
+    font-size: 0.95rem;
+    white-space: nowrap;
   }
 }

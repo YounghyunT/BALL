@@ -21,6 +21,8 @@ const FACE_MODEL =
 const WASM_PATH = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm";
 const PINCH_MS = 1000;
 const FRAME_COUNT = 30;
+const INITIAL_FRAME_COUNT = 8;
+const MOBILE_BREAKPOINT = 860;
 
 let handLandmarker;
 let faceLandmarker;
@@ -57,7 +59,8 @@ function setStatus(message, ready = false) {
 
 function sizeCanvas() {
   const rect = stage.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
+  const smallScreen = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
+  const dpr = Math.min(window.devicePixelRatio || 1, smallScreen ? 1.5 : 2);
 
   for (const canvas of [overlay, fxCanvas]) {
     canvas.width = Math.round(rect.width * dpr);
@@ -400,25 +403,51 @@ function loadImage(src) {
   });
 }
 
-function loadPowercoreFrames() {
-  powercoreLoadingPromise ||= Promise.all(
-    Array.from({ length: FRAME_COUNT }, (_, index) => loadImage(frameUrl(index + 1))),
-  )
-    .then((frames) => {
-      powercoreFrames = frames;
-      return frames;
-    })
-    .catch((error) => {
+function waitForIdle() {
+  return new Promise((resolve) => {
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(resolve, { timeout: 180 });
+      return;
+    }
+
+    window.setTimeout(resolve, 24);
+  });
+}
+
+async function loadPowercoreFrames() {
+  if (powercoreLoadingPromise) return powercoreLoadingPromise;
+
+  powercoreLoadingPromise = (async () => {
+    try {
+      const initialFrames = await Promise.all(
+        Array.from({ length: INITIAL_FRAME_COUNT }, (_, index) => loadImage(frameUrl(index + 1))),
+      );
+      powercoreFrames = initialFrames;
+
+      for (let index = INITIAL_FRAME_COUNT + 1; index <= FRAME_COUNT; index += 1) {
+        await waitForIdle();
+        powercoreFrames.push(await loadImage(frameUrl(index)));
+      }
+    } catch (error) {
       console.warn(error);
       powercoreFrames = [];
-      return [];
-    });
+    }
+
+    return powercoreFrames;
+  })();
 
   return powercoreLoadingPromise;
 }
 
+function warmPowercoreFrames() {
+  window.setTimeout(() => {
+    loadPowercoreFrames();
+  }, 180);
+}
+
 function spawnSpriteEffect(point) {
   const rect = fxCanvas.getBoundingClientRect();
+  const smallScreen = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
   spriteEffects = [
     {
       x: point.x * rect.width,
@@ -426,7 +455,7 @@ function spawnSpriteEffect(point) {
       age: 0,
       fps: 30,
       life: 1,
-      scale: 1.12,
+      scale: smallScreen ? 0.78 : 1.12,
     },
   ];
 }
@@ -485,7 +514,8 @@ function drawEffects(dt) {
   if (powercoreFrames.length && performance.now() >= hiddenUntil) {
     idleFrameIndex = (idleFrameIndex + dt * 18) % powercoreFrames.length;
     const frame = powercoreFrames[Math.floor(idleFrameIndex)];
-    const idleWidth = Math.min(rect.width, rect.height) * 0.44;
+    const smallScreen = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
+    const idleWidth = Math.min(rect.width, rect.height) * (smallScreen ? 0.32 : 0.44);
     const idleHeight = idleWidth * 0.68;
     const x = lastPoint.x * rect.width;
     const y = lastPoint.y * rect.height;
@@ -504,9 +534,12 @@ function drawEffects(dt) {
     effect.age += dt;
     if (effect.age >= effect.life || !powercoreFrames.length) return false;
 
-    const frameIndex = Math.min(powercoreFrames.length - 1, Math.floor(effect.age * effect.fps));
-    const frame = powercoreFrames[frameIndex];
     const progress = effect.age / effect.life;
+    const frameIndex = Math.min(
+      powercoreFrames.length - 1,
+      Math.floor(progress * powercoreFrames.length),
+    );
+    const frame = powercoreFrames[frameIndex];
     const alpha = 1 - Math.max(0, progress - 0.8) / 0.2;
     const burst = 1 + Math.sin(Math.min(progress, 1) * Math.PI) * 0.35;
     const width = Math.min(rect.width, rect.height) * effect.scale * burst;
@@ -612,7 +645,6 @@ async function startCamera() {
   startButton.disabled = true;
   setStatus("카메라 권한을 기다리는 중이에요.");
   getAudioContext();
-  loadPowercoreFrames();
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -627,6 +659,7 @@ async function startCamera() {
     video.srcObject = stream;
     await video.play();
     sizeCanvas();
+    warmPowercoreFrames();
     setStatus("카메라가 켜졌어요. 엄지와 검지를 1초 동안 잡으면 마법이 폭발해요.", true);
     showHint();
 
@@ -649,7 +682,6 @@ async function startCamera() {
 }
 
 window.addEventListener("resize", sizeCanvas);
-loadPowercoreFrames();
 sizeCanvas();
 startLoop();
 startButton.addEventListener("click", startCamera);
